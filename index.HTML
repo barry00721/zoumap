@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>步行参观西南林业大学</title>
+    <style>
+        html, body, #container {width:100%;height:100%;margin:0;padding:0;}
+        #page-title {position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.5);color:#fff;padding:6px 16px;border-radius:4px;font-weight:bold;}
+        #control-btn {position:fixed;top:50px;left:10px;z-index:100;display:flex;gap:10px;}
+        #control-btn button {padding:8px 16px;border:none;border-radius:4px;background:#1890ff;color:#fff;cursor:pointer;}
+        #panel {position:fixed;top:10px;right:10px;width:280px;background:#2c3e50;color:#ecf0f1;padding:15px;border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,0.3);}
+        #panel .title {font-weight:bold;color:#3498db;border-bottom:1px solid #34495e;padding-bottom:5px;margin-bottom:10px;}
+    </style>
+    <script>
+        window._AMapSecurityConfig = {
+            securityJsCode: "d8b7dc5bf32d5d8c823eda74258476dc",
+        };
+    </script>
+    <script src="https://webapi.amap.com/maps?v=2.0&key=d2a5887425dc1101ba58a1030609013f" defer></script>
+</head>
+<body>
+    <div id="page-title">步行参观西南林业大学</div>
+    <div id="container"></div>
+    <div id="control-btn">
+        <button id="startBtn">开始动画</button>
+        <button id="resetBtn">重新开始</button>
+    </div>
+    <div id="panel">
+        <div class="title">观光路线</div>
+        <div>📍 起点：二号门 | 终点：一号门</div>
+        <div>1️⃣ 二号门 → 标本馆</div>
+        <div>2️⃣ 标本馆 → 北图书馆</div>
+        <div>3️⃣ 北图书馆 → 南图书馆</div>
+        <div>4️⃣ 南图书馆 → 智华楼</div>
+        <div>5️⃣ 智华楼 → 一号门</div>
+        <div style="color:#3498db;font-weight:bold;margin-top:8px;">
+            ✅ 总距离：约876米 | 预计步行21分钟</div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const p1 = [102.752469,25.05781]; // 一号门
+            const p2 = [102.755204,25.057276]; // 智华楼
+            const p3 = [102.757322,25.057058]; // 南图书馆
+            const p4 = [102.757983,25.061466]; // 北图书馆
+            const p5 = [102.757782,25.062062]; // 标本馆
+            const p6 = [102.756608,25.059695]; // 二号门
+
+            const routePath = [
+                [102.756608,25.059695], [102.7570,25.0602], [102.7573,25.0608],
+                [102.7576,25.0615], [102.757782,25.062062], [102.757983,25.061466],
+                [102.7578,25.0595], [102.7576,25.0580], [102.757322,25.057058],
+                [102.7565,25.0570], [102.7558,25.0571], [102.755204,25.057276],
+                [102.7545,25.0573], [102.7538,25.0575], [102.7532,25.0576],
+                [102.7528,25.0577], [102.752469,25.05781]
+            ];
+
+            const map = new AMap.Map("container", {
+                zoom: 16,
+                center: [102.754538,25.058753],
+                viewMode: "2D",
+                resizeEnable: true
+            });
+
+            // 绘制路线
+            new AMap.Polyline({
+                map: map,
+                path: routePath,
+                strokeColor: "#3498db",
+                strokeWeight: 7,
+                strokeOpacity: 0.9,
+                strokeStyle: "solid"
+            });
+
+            // 动画标记：使用高德内置Marker，避免跨域问题
+            const animateMarker = new AMap.Marker({
+                map: map,
+                position: p6,
+                icon: 'https://a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-default.png', // 高德内置图标
+                offset: new AMap.Pixel(-12, -12)
+            });
+
+            let animateTimer = null;
+            let currentIndex = 0;
+            const speed = 80;
+
+            function startAnimation() {
+                if (animateTimer) clearInterval(animateTimer);
+                if (currentIndex >= routePath.length) currentIndex = 0;
+                animateTimer = setInterval(() => {
+                    if (currentIndex < routePath.length) {
+                        animateMarker.setPosition(routePath[currentIndex]);
+                        currentIndex++;
+                    } else {
+                        clearInterval(animateTimer);
+                        animateTimer = null;
+                        currentIndex = routePath.length - 1;
+                    }
+                }, speed);
+            }
+
+            function resetAnimation() {
+                if (animateTimer) clearInterval(animateTimer);
+                animateTimer = null;
+                currentIndex = 0;
+                animateMarker.setPosition(p6);
+            }
+
+            document.getElementById('startBtn').onclick = startAnimation;
+            document.getElementById('resetBtn').onclick = resetAnimation;
+
+            map.setFitView(map.getAllOverlays(), false, [50, 50, 50, 100]);
+        };
+    </script>
+</body>
+</html>
